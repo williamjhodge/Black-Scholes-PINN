@@ -44,6 +44,16 @@ Adding the far-field boundary condition reduced mean absolute error by ~44% and 
 
 Black-Scholes was chosen because it has a known closed-form analytical solution, allowing rigorous validation of the PINN's accuracy against ground truth. In practice, the real value of the PINN approach is for PDEs *without* closed-form solutions (e.g. American options with early exercise, or stochastic volatility models), where traditional numerical methods become expensive — this project demonstrates the method on a case where correctness can be independently verified.
 
+## Broader relevance of PINNs
+
+Used in the way it has been here, a PINN is arguably "overkill". The real value of PINNs emerges in scenarios that are harder to model with classical methods:
+
+- **Inverse problems** — if a parameter like volatility (σ) is not known in advance, but some real market prices *are* observed, a PINN can be trained to simultaneously fit the observed data and satisfy the PDE, effectively inferring the unknown parameter as part of training. This is difficult to do with a traditional numerical PDE solver, since those require the parameter to already be known.
+- **PDEs without closed-form solutions** — many realistic pricing models (e.g. American options with early exercise, or stochastic/local volatility models like Heston or SABR) do not have a clean analytical formula. Traditional numerical methods (finite differences, finite elements) can become computationally expensive, particularly in higher dimensions. A PINN can, in principle, approximate a solution to these more complex PDEs using the same architecture and training approach as this project — only the residual and boundary terms would need to change.
+- **High-dimensional problems** — classical grid-based numerical methods scale poorly as the number of state variables grows (the "curse of dimensionality"), since the number of grid points needed grows exponentially. PINNs sample points rather than requiring a full grid, making them comparatively better suited to higher-dimensional PDEs, such as basket options depending on multiple correlated assets.
+
+This project demonstrates the underlying mechanism — encoding a differential equation directly into a network's training objective — on a case simple enough to rigorously check against a known answer. The same mechanism extends naturally to the harder, more practically valuable cases above.
+
 ## Generality
 
 The training loop, network architecture, and derivative computation are entirely PDE-agnostic — only the residual line in the loss function and the boundary conditions are specific to Black-Scholes. The same code could be adapted to a different PDE (or option type, e.g. a put) by changing only those two components.
